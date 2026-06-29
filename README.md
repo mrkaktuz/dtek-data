@@ -1,6 +1,7 @@
 # dtek-data
 
 [![Збір розкладів](https://github.com/mrkaktuz/dtek-data/actions/workflows/collect.yml/badge.svg)](https://github.com/mrkaktuz/dtek-data/actions/workflows/collect.yml)
+![останнє оновлення](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmrkaktuz%2Fdtek-data%2Fdata%2Fbadges%2Fstatus.json&cacheSeconds=300)
 ![ДТЕК КРЕМ](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmrkaktuz%2Fdtek-data%2Fdata%2Fbadges%2Fdtek-krem.json&cacheSeconds=300)
 ![ДТЕК КЕМ](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmrkaktuz%2Fdtek-data%2Fdata%2Fbadges%2Fdtek-kem.json&cacheSeconds=300)
 
@@ -29,8 +30,8 @@
 - `data/index.json` — зведення по всіх джерелах (регіон, час оновлення, статус);
 - `data/log.jsonl` — історія запусків, по одному JSON-об'єкту на рядок
   (найновіші — в кінці, зберігаються останні 1000 запусків);
-- `data/badges/<source>.json` — Shields.io endpoint-бейджі стану кожного джерела
-  (для README та дашбордів).
+- `data/badges/<source>.json` та `data/badges/status.json` — Shields.io
+  endpoint-бейджі стану кожного джерела та загальний «останнє оновлення».
 
 Споживати напряму, напр.:
 

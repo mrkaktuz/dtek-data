@@ -173,6 +173,25 @@ export async function writeBadge(outDir, doc) {
   return file;
 }
 
+/** Overall "last updated" badge: run time + how many sources are ok. */
+export function buildOverallBadge({ stamp, okCount, total }) {
+  const allOk = total > 0 && okCount === total;
+  return {
+    schemaVersion: 1,
+    label: 'оновлено',
+    message: total ? `${stamp} · ${okCount}/${total} ok` : stamp,
+    color: allOk ? 'brightgreen' : okCount > 0 ? 'orange' : 'red',
+  };
+}
+
+export async function writeOverallBadge(outDir, badge) {
+  const dir = path.join(outDir, 'badges');
+  await mkdir(dir, { recursive: true });
+  const file = path.join(dir, 'status.json');
+  await writeFile(file, JSON.stringify(badge) + '\n', 'utf8');
+  return file;
+}
+
 export async function saveDocument(outDir, doc) {
   await mkdir(outDir, { recursive: true });
   const file = path.join(outDir, `${doc.source.id}.json`);

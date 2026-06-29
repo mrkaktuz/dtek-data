@@ -106,8 +106,10 @@ adjacent same kind+type intervals; `yes`/unknown produce no interval.
   switch to logging only `changed`/non-ok runs.
 - Content hash (`computeHash`) is over `groups+schedules+raw` (excludes timestamps/status).
 - **Badges**: `writeBadge` emits a Shields.io endpoint JSON per source to
-  `data/badges/<id>.json` (color by status, message = group count). Content is
-  timestamp-free so badge files only change on real status/size changes.
+  `data/badges/<id>.json` (color by status, message = group count); content is
+  timestamp-free so those change only on real status/size changes.
+  `writeOverallBadge` emits `data/badges/status.json` ("оновлено" + run time +
+  ok ratio) every run.
 
 ## CI / Actions (collect.yml)
 
@@ -121,6 +123,10 @@ adjacent same kind+type intervals; `yes`/unknown produce no interval.
   **No PAT needed** to push to `data` in this repo.
 - `schedule`/`workflow_dispatch` only register from the **default branch**
   (now `main`). The cron is best-effort (can be delayed/skipped).
+- **Gotcha:** GitHub (re)reads the cron only when `collect.yml` *changes on the
+  default branch*. Switching the default branch in Settings does NOT re-register
+  it — after such a switch, push a commit that touches `collect.yml` to main to
+  activate the schedule. The `push` trigger is the reliable fallback meanwhile.
 
 ## Environment knobs
 

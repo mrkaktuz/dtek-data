@@ -1,6 +1,8 @@
 name: Collect outage schedules
 
 on:
+  # GitHub registers cron schedules from the workflow on the DEFAULT branch and
+  # only (re)reads them when this file changes there. Best-effort every ~5 min.
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:

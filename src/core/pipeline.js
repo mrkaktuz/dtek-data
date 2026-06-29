@@ -18,6 +18,8 @@ import {
   saveDocument,
   writeIndex,
   writeBadge,
+  buildOverallBadge,
+  writeOverallBadge,
   appendRunLog,
 } from './publish.js';
 import { STATUS } from './schema.js';
@@ -74,6 +76,7 @@ export async function runPipeline({ sources, outDir, attempts = 3, storageStateP
       summaries.push(summarize(doc, changed));
     }
     await persistIndex(outDir, docs);
+    await writeStatusBadge(outDir, startedAt, summaries);
     await writeRunLog(outDir, startedAt, summaries, false);
     return { docs, allOk: false };
   }
@@ -110,6 +113,7 @@ export async function runPipeline({ sources, outDir, attempts = 3, storageStateP
 
   await persistIndex(outDir, docs);
   const allOk = docs.every((doc) => doc.status.ok);
+  await writeStatusBadge(outDir, startedAt, summaries);
   await writeRunLog(outDir, startedAt, summaries, allOk);
   return { docs, allOk };
 }
@@ -126,6 +130,13 @@ async function persistIndex(outDir, docs) {
   const previous = await loadIndex(outDir);
   const index = reconcileIndex(buildIndex(docs), previous);
   await writeIndex(outDir, index);
+}
+
+/** Write the overall "last updated" badge (run time + ok count). */
+async function writeStatusBadge(outDir, startedAt, summaries) {
+  const stamp = toKyivIso(startedAt).slice(0, 16).replace('T', ' ');
+  const okCount = summaries.filter((s) => s.ok).length;
+  await writeOverallBadge(outDir, buildOverallBadge({ stamp, okCount, total: summaries.length }));
 }
 
 /** Append one entry to the run-history log. */

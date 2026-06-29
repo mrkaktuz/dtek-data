@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { reconcileDocument, reconcileIndex, buildBadge } from '../src/core/publish.js';
+import { reconcileDocument, reconcileIndex, buildBadge, buildOverallBadge } from '../src/core/publish.js';
 
 const baseDoc = () => ({
   schemaVersion: '1.0',
@@ -47,6 +47,18 @@ test('buildBadge is green with group count when ok, red/code when failed', () =>
   const bad = buildBadge({ source: { id: 'dtek-krem' }, status: { ok: false, code: 'waf_blocked' }, groups: [] });
   assert.equal(bad.color, 'orange');
   assert.equal(bad.message, 'waf_blocked');
+});
+
+test('buildOverallBadge reflects ok ratio and run time', () => {
+  const green = buildOverallBadge({ stamp: '2026-06-29 14:10', okCount: 2, total: 2 });
+  assert.equal(green.color, 'brightgreen');
+  assert.match(green.message, /^2026-06-29 14:10 · 2\/2 ok$/);
+
+  const partial = buildOverallBadge({ stamp: '2026-06-29 14:10', okCount: 1, total: 2 });
+  assert.equal(partial.color, 'orange');
+
+  const down = buildOverallBadge({ stamp: '2026-06-29 14:10', okCount: 0, total: 2 });
+  assert.equal(down.color, 'red');
 });
 
 test('reconcileIndex ignores generatedAt', () => {
