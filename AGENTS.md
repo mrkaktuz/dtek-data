@@ -210,3 +210,9 @@ then read job logs and inspect the `data` branch (`git show origin/data:dtek-kre
 Plain JS, ESM (`"type":"module"`), Node ≥20, no TypeScript. No external deps beyond
 Playwright; tests use the built-in `node:test`. Keep the solution original — do not
 copy naming or code from third-party DTEK scrapers.
+
+## Workflow
+
+- **Branch:** work directly on `main` for this repo. No feature branches —
+  commit and push changes straight to `main`.
+- **Language:** always communicate with the user in Ukrainian (українською).
