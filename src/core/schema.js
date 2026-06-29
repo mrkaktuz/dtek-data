@@ -70,7 +70,7 @@ export const OUTAGE_TYPE = Object.freeze({
  * @typedef {Object} ScheduleDocument
  * @property {string} schemaVersion
  * @property {SourceMeta} source
- * @property {string} updatedAt  ISO 8601, when the collector last ran for this source.
+ * @property {string} updatedAt  ISO 8601, when this source's published data last changed.
  * @property {CollectStatus} status
  * @property {string[]} groups   All discovered "group.subgroup" labels, sorted.
  * @property {Object.<string, GroupSchedule>} schedules  Keyed by "group.subgroup".

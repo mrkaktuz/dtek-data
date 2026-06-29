@@ -36,7 +36,7 @@ https://raw.githubusercontent.com/<owner>/dtek-data/data/dtek-krem.json
 {
   "schemaVersion": "1.0",
   "source": { "id": "dtek-krem", "name": "…", "region": "…", "url": "…" },
-  "updatedAt": "2026-06-29T12:00:00+03:00",   // when the collector last ran
+  "updatedAt": "2026-06-29T12:00:00+03:00",   // when the published data last changed
   "status": {
     "ok": true,
     "code": "ok",                              // ok | waf_blocked | timeout | parse_error | no_data
@@ -67,6 +67,10 @@ template (`preset`) is expanded over a rolling 7-day horizon; same-day actual
 data (`fact`) overrides the template for the dates it covers. When a run fails,
 the previous `groups`/`schedules`/`raw` are kept and only `status`/`updatedAt`
 change — consumers never see an empty file.
+
+A new commit lands on the `data` branch only when something meaningful changes
+(schedule, status, or the provider's own `sourceUpdatedAt`); identical re-runs
+are skipped, so `updatedAt` marks the last real change rather than the last poll.
 
 ## Local usage
 

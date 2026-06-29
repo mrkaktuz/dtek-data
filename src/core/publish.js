@@ -37,14 +37,46 @@ export function computeHash({ groups, schedules, raw }) {
   return 'sha256:' + createHash('sha256').update(json).digest('hex');
 }
 
-/** Read a previously published document, or null if none/unreadable. */
-export async function loadDocument(outDir, id) {
+/** Read a previously published JSON file, or null if none/unreadable. */
+async function loadJson(outDir, file) {
   try {
-    const text = await readFile(path.join(outDir, `${id}.json`), 'utf8');
-    return JSON.parse(text);
+    return JSON.parse(await readFile(path.join(outDir, file), 'utf8'));
   } catch {
     return null;
   }
+}
+
+/** Read a previously published document, or null if none/unreadable. */
+export function loadDocument(outDir, id) {
+  return loadJson(outDir, `${id}.json`);
+}
+
+/** Read the previously published index, or null. */
+export function loadIndex(outDir) {
+  return loadJson(outDir, 'index.json');
+}
+
+/** Deep-equal two objects after dropping volatile keys. */
+function equalIgnoring(a, b, ignoreKeys) {
+  const strip = (obj) => {
+    const clone = JSON.parse(JSON.stringify(obj));
+    for (const key of ignoreKeys) delete clone[key];
+    return JSON.stringify(clone);
+  };
+  return Boolean(a) && Boolean(b) && strip(a) === strip(b);
+}
+
+/**
+ * Avoid churn: if the new document matches the previous one apart from its
+ * timestamp, keep the previous one so the file (and git) stays unchanged.
+ */
+export function reconcileDocument(candidate, previous) {
+  return equalIgnoring(candidate, previous, ['updatedAt']) ? previous : candidate;
+}
+
+/** Same idea for the index, ignoring its generation timestamp. */
+export function reconcileIndex(candidate, previous) {
+  return equalIgnoring(candidate, previous, ['generatedAt']) ? previous : candidate;
 }
 
 /** Document for a successful collection. */
@@ -98,9 +130,9 @@ export async function saveDocument(outDir, doc) {
   return file;
 }
 
-/** Write the cross-source summary index. */
-export async function saveIndex(outDir, docs, now = new Date()) {
-  const index = {
+/** Build the cross-source summary index (pure). */
+export function buildIndex(docs, now = new Date()) {
+  return {
     schemaVersion: SCHEMA_VERSION,
     generatedAt: toKyivIso(now),
     sources: docs.map((doc) => ({
@@ -113,6 +145,9 @@ export async function saveIndex(outDir, docs, now = new Date()) {
       file: `${doc.source.id}.json`,
     })),
   };
+}
+
+export async function writeIndex(outDir, index) {
   await mkdir(outDir, { recursive: true });
   const file = path.join(outDir, 'index.json');
   await writeFile(file, JSON.stringify(index, null, 2) + '\n', 'utf8');
