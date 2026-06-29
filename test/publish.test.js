@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { reconcileDocument, reconcileIndex } from '../src/core/publish.js';
+import { reconcileDocument, reconcileIndex, buildBadge } from '../src/core/publish.js';
 
 const baseDoc = () => ({
   schemaVersion: '1.0',
@@ -36,6 +36,17 @@ test('reconcileDocument takes candidate when status changes (ok -> failure)', ()
 test('reconcileDocument takes candidate when there is no previous', () => {
   const candidate = baseDoc();
   assert.equal(reconcileDocument(candidate, null), candidate);
+});
+
+test('buildBadge is green with group count when ok, red/code when failed', () => {
+  const ok = buildBadge({ source: { id: 'dtek-krem' }, status: { ok: true, code: 'ok' }, groups: ['1.1', '1.2'] });
+  assert.equal(ok.schemaVersion, 1);
+  assert.equal(ok.color, 'brightgreen');
+  assert.match(ok.message, /^ok · 2 груп$/);
+
+  const bad = buildBadge({ source: { id: 'dtek-krem' }, status: { ok: false, code: 'waf_blocked' }, groups: [] });
+  assert.equal(bad.color, 'orange');
+  assert.equal(bad.message, 'waf_blocked');
 });
 
 test('reconcileIndex ignores generatedAt', () => {

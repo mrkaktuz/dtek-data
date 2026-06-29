@@ -142,6 +142,37 @@ export function buildFailureDocument(adapter, previous, code, message, now = new
   };
 }
 
+const BADGE_COLORS = {
+  ok: 'brightgreen',
+  waf_blocked: 'orange',
+  timeout: 'orange',
+  no_data: 'red',
+  parse_error: 'red',
+};
+
+/**
+ * Build a Shields.io "endpoint" badge object for a source. Content is kept
+ * stable (no timestamps) so the badge file only changes on a real status/size
+ * change, not every run.
+ */
+export function buildBadge(doc) {
+  const code = doc.status.code;
+  return {
+    schemaVersion: 1,
+    label: doc.source.id,
+    message: doc.status.ok ? `ok · ${doc.groups.length} груп` : code,
+    color: BADGE_COLORS[code] || 'lightgrey',
+  };
+}
+
+export async function writeBadge(outDir, doc) {
+  const dir = path.join(outDir, 'badges');
+  await mkdir(dir, { recursive: true });
+  const file = path.join(dir, `${doc.source.id}.json`);
+  await writeFile(file, JSON.stringify(buildBadge(doc)) + '\n', 'utf8');
+  return file;
+}
+
 export async function saveDocument(outDir, doc) {
   await mkdir(outDir, { recursive: true });
   const file = path.join(outDir, `${doc.source.id}.json`);

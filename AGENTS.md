@@ -35,7 +35,7 @@ src/
   index.js        CLI entry (parse args -> runPipeline)
 test/             node:test unit tests + fixtures (no browser needed)
 .github/workflows/collect.yml   scheduled run -> publishes to data branch
-data/ (orphan branch only)      <source>.json, index.json, log.jsonl
+data/ (orphan branch only)      <source>.json, index.json, log.jsonl, badges/<source>.json
 ```
 
 Published data lives ONLY on the `data` branch, never on `main`. `main`'s
@@ -105,6 +105,9 @@ adjacent same kind+type intervals; `yes`/unknown produce no interval.
   gets one commit per run (a heartbeat). If commit volume becomes a problem,
   switch to logging only `changed`/non-ok runs.
 - Content hash (`computeHash`) is over `groups+schedules+raw` (excludes timestamps/status).
+- **Badges**: `writeBadge` emits a Shields.io endpoint JSON per source to
+  `data/badges/<id>.json` (color by status, message = group count). Content is
+  timestamp-free so badge files only change on real status/size changes.
 
 ## CI / Actions (collect.yml)
 

@@ -17,6 +17,7 @@ import {
   buildIndex,
   saveDocument,
   writeIndex,
+  writeBadge,
   appendRunLog,
 } from './publish.js';
 import { STATUS } from './schema.js';
@@ -68,6 +69,7 @@ export async function runPipeline({ sources, outDir, attempts = 3, storageStateP
       const previous = await loadDocument(outDir, adapter.id);
       const candidate = buildFailureDocument(adapter, previous, STATUS.PARSE_ERROR, err && err.message);
       const { doc, changed } = await persistDocument(outDir, candidate, previous);
+      await writeBadge(outDir, doc);
       docs.push(doc);
       summaries.push(summarize(doc, changed));
     }
@@ -97,6 +99,7 @@ export async function runPipeline({ sources, outDir, attempts = 3, storageStateP
         });
       }
       const { doc, changed } = await persistDocument(outDir, candidate, previous);
+      await writeBadge(outDir, doc);
       docs.push(doc);
       summaries.push(summarize(doc, changed));
     }
