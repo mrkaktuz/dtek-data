@@ -143,18 +143,40 @@ GitHub Actions (маскуються в логах). У **Settings → Secrets a
 Actions** додайте:
 
 - `TELEGRAM_BOT_TOKEN` — токен бота від @BotFather;
-- `TELEGRAM_CHAT_ID` — ваш chat id (напр. від @userinfobot).
+- `TELEGRAM_CHAT_ID` — chat id (напр. від @userinfobot; для груп — від'ємний);
+- `TELEGRAM_THREAD_ID` — *опційно*, id підтеми (topic) для груп-форумів.
 
 Без цих секретів сповіщення просто вимкнені.
 
-## Надійний розклад (опційно)
+## Надійний розклад через зовнішній планувальник (рекомендовано)
 
-GitHub `*/5` cron для маловідвідуваних репозиторіїв сильно тротлиться (може
-спрацьовувати раз на 15–60 хв або рідше). Для стабільних ~5 хв додайте секрет
-`DISPATCH_TOKEN` — fine-grained PAT на цей репозиторій з правом **Actions:
-read and write**. Тоді кожен запуск сам ставить у чергу наступний (ланцюжок),
-а cron лишається запасним механізмом перезапуску. Без секрету workflow працює
-лише за (best-effort) cron.
+GitHub `*/5` cron — **best-effort**: для маловідвідуваних репозиторіїв сильно
+тротлиться (може спрацьовувати раз на 15–60 хв або рідше). Жоден інтервал не
+гарантований. Для стабільних 5 хв використовуйте зовнішній планувальник
+(cron-job.org, UptimeRobot тощо), що запускає workflow через GitHub API.
+
+Безтокенового URL немає — потрібен fine-grained PAT на цей репозиторій з правом
+**Actions: read and write**. Налаштування запиту в планувальнику:
+
+- **URL:** `https://api.github.com/repos/<owner>/dtek-data/actions/workflows/collect.yml/dispatches`
+- **Method:** `POST`
+- **Headers:**
+  - `Authorization: Bearer <PAT>`
+  - `Accept: application/vnd.github+json`
+  - `X-GitHub-Api-Version: 2022-11-28`
+- **Body:** `{"ref":"main"}`
+
+Перевірити вручну:
+
+```bash
+curl -X POST -H "Authorization: Bearer <PAT>" \
+  -H "Accept: application/vnd.github+json" \
+  https://api.github.com/repos/<owner>/dtek-data/actions/workflows/collect.yml/dispatches \
+  -d '{"ref":"main"}'
+```
+
+Успіх — `204 No Content`. PAT зберігається лише в планувальнику. Вбудований cron
+лишається грубим запасним механізмом.
 
 ## Примітки
 

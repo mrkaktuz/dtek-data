@@ -74,6 +74,7 @@ jobs:
           # Optional Telegram notifications (set as repo secrets; never logged).
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ secrets.TELEGRAM_THREAD_ID }}
         run: node src/index.js --out data-branch
 
       - name: Publish if changed
@@ -86,33 +87,3 @@ jobs:
             git commit -m "data: update outage schedules ($(date -u +%FT%TZ))"
             git push origin HEAD:data
           fi
-
-      # GitHub's */5 cron is throttled/unreliable for low-traffic repos. With a
-      # DISPATCH_TOKEN secret (fine-grained PAT, Actions: read+write) each run
-      # re-dispatches the next one, giving a steady ~5-min cadence. A guard skips
-      # dispatch if another run is already active, so chains never pile up; the
-      # cron remains a fallback to restart the chain if it ever dies. Without the
-      # secret this is a no-op and the workflow relies on cron alone.
-      - name: Keep the 5-minute chain alive
-        if: ${{ always() }}
-        env:
-          DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          REPO: ${{ github.repository }}
-        run: |
-          if [ -z "$DISPATCH_TOKEN" ]; then
-            echo "No DISPATCH_TOKEN; relying on the (best-effort) cron schedule."
-            exit 0
-          fi
-          api="https://api.github.com/repos/$REPO/actions/workflows/collect.yml"
-          active=$(curl -fsS -H "Authorization: Bearer $DISPATCH_TOKEN" \
-            -H "Accept: application/vnd.github+json" "$api/runs?per_page=50" \
-            | jq '[.workflow_runs[] | select(.status=="queued" or .status=="in_progress")] | length')
-          if [ "${active:-0}" -gt 1 ]; then
-            echo "Another run is active ($active); not extending the chain."
-            exit 0
-          fi
-          sleep 90
-          curl -fsS -X POST -H "Authorization: Bearer $DISPATCH_TOKEN" \
-            -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" \
-            "$api/dispatches" -d '{"ref":"main"}'
-          echo "Dispatched the next run."
