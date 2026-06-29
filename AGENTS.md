@@ -139,18 +139,25 @@ previously published doc). Credentials: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
 optional `TELEGRAM_THREAD_ID` (forum-group topic → `message_thread_id`). GitHub
 secrets; never committed. Absent creds ⇒ no-op.
 
-## Schedule reliability
+## Schedule / triggering
 
-GitHub `*/5` cron is throttled hard for low-traffic repos (observed: fires once
-after (re)registration, then sporadically) and GitHub guarantees no interval.
-Reliable cadence comes from an **external scheduler** (cron-job.org, UptimeRobot,
-…) that triggers the workflow via the API every 5 min:
-`POST /repos/<owner>/dtek-data/actions/workflows/collect.yml/dispatches` with
-`Authorization: Bearer <PAT>` (fine-grained, Actions: read+write) and body
-`{"ref":"main"}` → 204. The PAT lives only in the scheduler. There is no
-token-less trigger URL. The built-in `*/5` cron stays as a coarse fallback.
-Reminder: cron only (re)registers when collect.yml changes on the default branch.
-(A self-dispatch chain was tried and removed as too fragile.)
+The only trigger is `workflow_dispatch`. GitHub cron and the push trigger were
+removed (cron is throttled for low-traffic repos; GitHub guarantees no interval).
+Runs are started by an **external scheduler** — the owner runs a systemd timer on
+their Ubuntu box that POSTs to
+`/repos/<owner>/dtek-data/actions/workflows/collect.yml/dispatches`
+(`Authorization: Bearer <PAT>`, fine-grained, Actions: read+write; body
+`{"ref":"main"}` → 204). No token-less trigger URL exists.
+
+Overlap protection: workflow has `concurrency: collect` (no parallel runs, at
+most one queued), and the server's dispatch script skips POST when a run is
+already queued/in_progress (GET .../runs), so the effective interval is never
+shorter than one collection (~3–4 min) regardless of the timer period.
+
+Note for CI verification from here: with no push trigger, commits to main no
+longer auto-run the workflow; the server's timer drives runs, or trigger one via
+the workflow_dispatch API. (A PAT self-dispatch chain was tried and removed as
+too fragile.) Reminder: workflow_dispatch must exist on the default branch.
 
 ## Environment knobs
 

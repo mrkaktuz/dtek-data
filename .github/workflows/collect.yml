@@ -1,18 +1,11 @@
 name: Collect outage schedules
 
 on:
-  # GitHub registers cron schedules from the workflow on the DEFAULT branch and
-  # only (re)reads them when this file changes there. Best-effort every ~5 min.
-  schedule:
-    - cron: '*/5 * * * *'
+  # Triggered by an external scheduler (the server's systemd timer) via the
+  # workflow_dispatch REST API — see README. GitHub's own cron is intentionally
+  # not used (best-effort/throttled). Add a `schedule:` here if you ever want a
+  # fallback. workflow_dispatch must exist on the default branch to be callable.
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - '.github/workflows/collect.yml'
-      - 'package.json'
-      - 'package-lock.json'
 
 permissions:
   contents: write

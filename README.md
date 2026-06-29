@@ -148,35 +148,34 @@ Actions** додайте:
 
 Без цих секретів сповіщення просто вимкнені.
 
-## Надійний розклад через зовнішній планувальник (рекомендовано)
+## Запуск через зовнішній планувальник
 
-GitHub `*/5` cron — **best-effort**: для маловідвідуваних репозиторіїв сильно
-тротлиться (може спрацьовувати раз на 15–60 хв або рідше). Жоден інтервал не
-гарантований. Для стабільних 5 хв використовуйте зовнішній планувальник
-(cron-job.org, UptimeRobot тощо), що запускає workflow через GitHub API.
+Єдиний тригер workflow — `workflow_dispatch`. GitHub-cron свідомо не
+використовується (best-effort/тротлиться, жоден інтервал не гарантований).
+Запуск ініціює зовнішній планувальник (systemd timer / cron на сервері,
+cron-job.org, UptimeRobot тощо) через GitHub API.
 
 Безтокенового URL немає — потрібен fine-grained PAT на цей репозиторій з правом
-**Actions: read and write**. Налаштування запиту в планувальнику:
+**Actions: read and write**:
 
 - **URL:** `https://api.github.com/repos/<owner>/dtek-data/actions/workflows/collect.yml/dispatches`
-- **Method:** `POST`
-- **Headers:**
-  - `Authorization: Bearer <PAT>`
-  - `Accept: application/vnd.github+json`
-  - `X-GitHub-Api-Version: 2022-11-28`
-- **Body:** `{"ref":"main"}`
+- **Method:** `POST`, **Body:** `{"ref":"main"}`
+- **Headers:** `Authorization: Bearer <PAT>`, `Accept: application/vnd.github+json`,
+  `X-GitHub-Api-Version: 2022-11-28`
+- Успіх — `204 No Content`. PAT зберігається лише в планувальнику.
 
-Перевірити вручну:
+**Без накладок.** Одна збірка триває ~3–4 хв. Workflow має
+`concurrency: collect` (паралельні запуски не виконуються — максимум один у
+черзі), а на сервері варто додатково пропускати dispatch, якщо запуск уже
+активний — тоді фактичний інтервал ніколи не буде меншим за тривалість збірки:
 
 ```bash
-curl -X POST -H "Authorization: Bearer <PAT>" \
-  -H "Accept: application/vnd.github+json" \
-  https://api.github.com/repos/<owner>/dtek-data/actions/workflows/collect.yml/dispatches \
-  -d '{"ref":"main"}'
+API=https://api.github.com/repos/<owner>/dtek-data/actions/workflows/collect.yml
+active=$(curl -fsS -K dispatch.curl.conf "$API/runs?per_page=20" \
+  | jq '[.workflow_runs[]|select(.status=="queued" or .status=="in_progress")]|length')
+[ "${active:-0}" -gt 0 ] && { echo "busy"; exit 0; }
+curl -fsS -K dispatch.curl.conf -X POST "$API/dispatches" -d '{"ref":"main"}'
 ```
-
-Успіх — `204 No Content`. PAT зберігається лише в планувальнику. Вбудований cron
-лишається грубим запасним механізмом.
 
 ## Примітки
 
