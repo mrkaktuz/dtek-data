@@ -6,13 +6,13 @@
     "region": "Житомирська область",
     "url": "https://www.ztoe.com.ua/unhooking-search.php"
   },
-  "updatedAt": "2026-06-30T20:34:33+03:00",
+  "updatedAt": "2026-06-30T21:00:12+03:00",
   "status": {
     "ok": true,
     "code": "ok",
     "message": null,
-    "contentHash": "sha256:c3a7fa20c7bd6b71e3c95bc3085df795b045ac3cc86df6f6ba082b2bd15dd379",
-    "sourceUpdatedAt": "30.06.2026 20:30"
+    "contentHash": "sha256:5ff902f08fb556113d7eb0ac6b9b85122ba39f4d49046cd4d6acbeb687429a98",
+    "sourceUpdatedAt": "30.06.2026 21:00"
   },
   "groups": [
     "1.1",
@@ -461,7 +461,7 @@
           }
         }
       },
-      "update": "30.06.2026 20:30",
+      "update": "30.06.2026 21:00",
       "today": 1782766800
     }
   }
