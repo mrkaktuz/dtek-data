@@ -6,13 +6,13 @@
     "region": "Житомирська область",
     "url": "https://www.ztoe.com.ua/unhooking-search.php"
   },
-  "updatedAt": "2026-06-30T16:00:43+03:00",
+  "updatedAt": "2026-06-30T16:36:15+03:00",
   "status": {
     "ok": true,
     "code": "ok",
     "message": null,
-    "contentHash": "sha256:a3a96017b720fc6b0473262e8e4bc3a19b5b6f43fe5e88b58de47aade7eeb655",
-    "sourceUpdatedAt": "30.06.2026 16:00"
+    "contentHash": "sha256:b51620605102cef4964eac6d534c1ee1530327667a126d6fefbbe351f210f5ad",
+    "sourceUpdatedAt": "30.06.2026 16:30"
   },
   "groups": [
     "1.1",
@@ -33,15 +33,7 @@
       "group": "1",
       "subgroup": "1",
       "name": "Черга 1.1",
-      "intervals": [
-        {
-          "start": "2026-06-30T17:00:00+03:00",
-          "end": "2026-06-30T19:00:00+03:00",
-          "kind": "off",
-          "type": "planned",
-          "origin": "fact"
-        }
-      ]
+      "intervals": []
     },
     "1.2": {
       "group": "1",
@@ -173,8 +165,8 @@
             "15": "yes",
             "16": "yes",
             "17": "yes",
-            "18": "no",
-            "19": "no",
+            "18": "yes",
+            "19": "yes",
             "20": "yes",
             "21": "yes",
             "22": "yes",
@@ -469,7 +461,7 @@
           }
         }
       },
-      "update": "30.06.2026 16:00",
+      "update": "30.06.2026 16:30",
       "today": 1782766800
     }
   }
