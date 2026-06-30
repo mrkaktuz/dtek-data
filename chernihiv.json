@@ -6,11 +6,11 @@
     "region": "Чернігівська область",
     "url": "https://interruptions.energy.cn.ua/interruptions"
   },
-  "updatedAt": "2026-06-29T22:48:34+03:00",
+  "updatedAt": "2026-06-30T05:21:57+03:00",
   "status": {
     "ok": false,
     "code": "no_data",
-    "message": "Chernihiv API returned no schedule for any queue",
+    "message": "Chernihiv API returned no valid response (diag: [{\"dt\":\"2026-06-30\",\"label\":\"1.1\",\"ok\":false,\"status\":400,\"ct\":\"application/json; charset=utf-8\",\"snippet\":\"{\\\"error\\\":\\\"No captcha\\\"}\"},{\"dt\":\"2026-06-30\",\"label\":\"1.2\",\"ok\":false,\"status\":400,\"ct\":\"application/json; charset=utf-8\",\"snippet\":\"{\\\"error\\\":\\\"No captcha\\\"}\"},{\"dt\":\"2026-06-30\",\"label\":\"2.1\",\"ok\":false,\"status\":400,\"ct\":\"application/json; charset=utf-8\",\"snippet\":\"{\\\"error\\\":\\\"No captcha\\\"}\"}])",
     "contentHash": null,
     "sourceUpdatedAt": null
   },
