@@ -111,57 +111,57 @@ async function fetchSnapshot(page, url) {
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT_MS });
   await dismissModal(page);
 
+  // The tiny Incapsula challenge stub is ~1 KB; the real page is tens of KB.
+  // (The real page ALSO embeds an `_Incapsula_Resource` telemetry script, so
+  // that marker alone is NOT a reliable "still challenged" signal — only size is.)
+  const looksLikeStub = (html) => !html || html.length < 2500;
+
   const deadline = Date.now() + DATA_TIMEOUT_MS;
   let sawChallenge = false;
+  let reachedRealPage = false;
   let reloads = 0;
 
   while (Date.now() < deadline) {
-    // A reload can destroy the evaluation context mid-flight → treat as "keep waiting".
-    const state = await page
-      .evaluate(() => ({
-        hasData: !!(
-          window.DisconSchedule &&
-          window.DisconSchedule.preset &&
-          window.DisconSchedule.preset.data &&
-          Object.keys(window.DisconSchedule.preset.data).length > 0
-        ),
-        stub: !!document.querySelector('script[src*="_Incapsula_Resource"]'),
-        len: document.documentElement ? document.documentElement.innerHTML.length : 0,
-      }))
-      .catch(() => null);
+    // 1) Fast path: the app JS populated the live global.
+    const raw = await readSnapshot(page).catch(() => null);
+    if (raw) {
+      if (sawChallenge) log.info('Incapsula challenge cleared', { url, reloads });
+      return raw;
+    }
 
-    if (state && state.hasData) {
-      const raw = await readSnapshot(page);
-      if (raw) {
+    // 2) The cleared page embeds preset/fact inline — parse straight from HTML
+    //    the moment the real page is served, without waiting for its JS.
+    const html = await page.content().catch(() => '');
+    const stub = looksLikeStub(html);
+    if (!stub) {
+      reachedRealPage = true;
+      const fallback = extractFromHtml(html);
+      if (fallback) {
         if (sawChallenge) log.info('Incapsula challenge cleared', { url, reloads });
-        return raw;
+        return fallback;
       }
     }
 
-    const onChallenge = !state || state.stub || state.len < 3000;
-    if (onChallenge) {
-      sawChallenge = true;
-      // Give Incapsula's script time to set cookies / auto-reload, then reload
-      // ourselves so the follow-up request carries them and returns the real page.
-      await page.waitForTimeout(3000);
+    // 3) Still on the stub → let its script set cookies, then reload so the
+    //    follow-up request carries them; on a real-but-not-ready page just wait.
+    sawChallenge = sawChallenge || stub;
+    await page.waitForTimeout(stub ? 3000 : 1500);
+    if (stub) {
       reloads += 1;
       await page.reload({ waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT_MS }).catch(() => {});
       await dismissModal(page);
-    } else {
-      // Real page is served; its app JS is still populating DisconSchedule.
-      await page.waitForTimeout(1500);
     }
   }
 
-  // Budget exhausted — one last HTML parse, otherwise classify the block.
+  // Budget exhausted — one last parse, otherwise classify the block.
   const html = await page.content().catch(() => '');
-  if (!html || html.length < 3000 || html.includes('_Incapsula_Resource')) {
-    throw new CollectError(STATUS.WAF_BLOCKED, 'Incapsula challenge did not clear');
-  }
   const fallback = extractFromHtml(html);
   if (fallback) {
     log.info('used HTML fallback extraction', { url });
     return fallback;
+  }
+  if (!reachedRealPage && looksLikeStub(html)) {
+    throw new CollectError(STATUS.WAF_BLOCKED, 'Incapsula challenge did not clear');
   }
   throw new CollectError(STATUS.TIMEOUT, 'DisconSchedule did not populate in time');
 }
