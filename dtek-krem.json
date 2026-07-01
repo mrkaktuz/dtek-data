@@ -6,11 +6,11 @@
     "region": "Київська область",
     "url": "https://www.dtek-krem.com.ua/ua/shutdowns"
   },
-  "updatedAt": "2026-07-01T08:32:36+03:00",
+  "updatedAt": "2026-07-01T10:17:33+03:00",
   "status": {
-    "ok": false,
-    "code": "waf_blocked",
-    "message": "Incapsula challenge did not clear",
+    "ok": true,
+    "code": "ok",
+    "message": null,
     "contentHash": "sha256:3db3841e0f85ddf2eb722e4bcce1621dd7dc2da80f0990da63299844829287f4",
     "sourceUpdatedAt": "30.06.2026 20:16"
   },

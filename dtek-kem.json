@@ -6,11 +6,11 @@
     "region": "місто Київ",
     "url": "https://www.dtek-kem.com.ua/ua/shutdowns"
   },
-  "updatedAt": "2026-07-01T08:34:33+03:00",
+  "updatedAt": "2026-07-01T10:20:36+03:00",
   "status": {
-    "ok": false,
-    "code": "waf_blocked",
-    "message": "Incapsula challenge did not clear",
+    "ok": true,
+    "code": "ok",
+    "message": null,
     "contentHash": "sha256:b4faed7346163ab82aec41a6c1844b3d2dcf015a1f1e9fe9f8c135aebe0673de",
     "sourceUpdatedAt": "30.06.2026 20:20"
   },
