@@ -36,6 +36,9 @@ src/
     ztoe/
       parse.js       ztoe coloured HTML table -> DisconSchedule snapshot
       ztoe.js        adapter: Житомиробленерго (reuses dtek/normalize.js)
+    mykolaiv/
+      parse.js       off.energy.mk.ua JSON (queues+slots+series) -> schedule
+      mykolaiv.js    adapter: Миколаївобленерго (plain JSON API, no browser)
   index.js        CLI entry (parse args -> runPipeline)
 test/             node:test unit tests + fixtures (no browser needed)
 .github/workflows/collect.yml   scheduled run -> publishes to data branch
@@ -125,6 +128,37 @@ Two things clear it:
 - Modeled on two existing parsers (yaroslav2901/ZTOE_PARSER, IfRiTLove/ztoe-parser);
   code here is original. **Verified end-to-end in CI** both with no outages (ok, 0
   groups) and with a live schedule (ok, 12 groups).
+
+## mykolaiv source — confirmed facts (Миколаївобленерго)
+
+- Clean public JSON API at `https://off.energy.mk.ua`, **no anti-bot / no browser
+  needed** (plain `fetch`; the adapter ignores the `page`). Three endpoints joined:
+  `/api/outage-queue/by-type/3` (12 sub-queues `id`→`name` "1.1".."6.2"),
+  `/api/schedule/time-series` (48 half-hour slots `id`→`start`/`end`; last `end` is
+  "00:00:00" = 24:00), `/api/v2/schedule/active` (`[{from,to,series:[{time_series_id,
+  outage_queue_id,type}]}]`). `from` is a UTC instant = 00:00 Kyiv of that day.
+- `type`: **OFF** → off/planned, **PROBABLY_OFF** → possible; anything else (e.g. ON)
+  → no interval. `sourceUpdatedAt` = latest `series[].updated_at` as Kyiv "DD.MM.YYYY HH:mm".
+- Raw is stored as `{preset:{queues,slots}, fact:{active}}` so `buildSuccessDocument`
+  keeps the snapshot. **Verified end-to-end against the live API** (queues + real
+  intervals) — this source, unlike the browser ones, is testable from the sandbox.
+
+## Other regions surveyed (2026-07) — not implemented
+
+Searched for ready sources per region (see also Baskerville42/outage-data-ua, which
+covers only DTEK dnipro/kyiv/kyiv-region/odesa — all already here):
+
+- **Chernihiv** — `interruptions.energy.cn.ua` JSON API behind **Cloudflare Turnstile**
+  (`{"error":"No captcha"}`); deferred (details below).
+- **Lviv (LOE)** — `api.loe.lviv.ua ...type=photo-grafic` publishes schedules as
+  **images**; would need OCR. Not feasible cheaply. (adroush/loe_outages)
+- **Vinnytsia (VOE)** — `voe.com.ua` is **Cloudflare-challenged** (HTTP 403 + captcha).
+- **Cherkasy** — no clean API; schedules live in `cherkasyoblenergo.com` **news posts**
+  (DankRank/ckgpv scrapes them) or a Telegram channel (mcfedr/cherkasy-outage-ha).
+- **Chernivtsi** — denysdovhan/chernivtsi-outages publishes JSON but is **stale**
+  (last data 2023).
+- **DTEK Donetsk** (`dtek-dem.com.ua`) — same DisconSchedule platform (HTTP 200), a
+  trivial add, but the oblast is largely occupied so schedule coverage is doubtful.
 
 ## chernihiv (Чернігівобленерго) — DEFERRED, not implemented
 

@@ -7,6 +7,7 @@
 ![ДТЕК ДНЕМ](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmrkaktuz%2Fdtek-data%2Fdata%2Fbadges%2Fdtek-dnem.json&cacheSeconds=300)
 ![ДТЕК ОЕМ](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmrkaktuz%2Fdtek-data%2Fdata%2Fbadges%2Fdtek-oem.json&cacheSeconds=300)
 ![Житомиробленерго](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmrkaktuz%2Fdtek-data%2Fdata%2Fbadges%2Fztoe.json&cacheSeconds=300)
+![Миколаївобленерго](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmrkaktuz%2Fdtek-data%2Fdata%2Fbadges%2Fmykolaiv.json&cacheSeconds=300)
 
 Універсальний збирач графіків відключень електроенергії. Рендерить сайти
 операторів реальним браузером, нормалізує дані в стабільний JSON і кожні ~5 хв
@@ -23,6 +24,7 @@
 | `dtek-dnem` | ДТЕК Дніпровські електромережі              | Дніпропетровська область |
 | `dtek-oem`  | ДТЕК Одеські електромережі                  | Одеська область    |
 | `ztoe`      | Житомиробленерго                            | Житомирська область |
+| `mykolaiv`  | Миколаївобленерго                           | Миколаївська область |
 
 Незалежно від того, як саме оператор віддає дані, колектор зводить усе до одного
 формату. Джерела відрізняються механізмом отримання:
@@ -34,6 +36,9 @@
   кольоровими комірками (червона = відключення) по 48 півгодинних слотів на чергу.
   Колектор рендерить сторінку браузером (вона у `windows-1251`) і перетворює
   таблицю в ту саму структуру `DisconSchedule`, що й ДТЕК.
+- **Миколаївобленерго** (`mykolaiv`) має відкритий JSON-API (`off.energy.mk.ua`,
+  без анти-бот захисту), тож збирається без браузера — три ендпоінти (черги,
+  півгодинні слоти, активний розклад) об'єднуються в інтервали.
 
 ## Опубліковані дані
 
